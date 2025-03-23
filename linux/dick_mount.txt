@@ -1,0 +1,76 @@
+монтирование диска
+
+        sudo gdisk /dev/sdb - утилита для управления дисками и разделами (логическими дисками)
+        whatis mkfs - вызов однострочной справки по утилите mkfs
+        sudo mkfs.ext4 /dev/sdb1 - создание файловой системы ext4 на разделе диска /dev/sdb1
+        ls /mnt - просмотр текущего содержимого папки /mnt (точка монтирования дисков)
+        sudo mkdir /mnt/newdrive - создание новой папки для монтирования в нее нового раздела
+        sudo mount /dev/sdb1 /mnt/newdrive - монтирвание раздела диска в папку
+        sudo chmod o+w /mnt/newdrive/ - раздача прав на запись на новый каталог
+        
+        
+        tree /mnt/newdrive/ - отобразить в виде дерева содержимое указанной папки
+        touch /mnt/newdrive/myfile.txt - создать новый файл
+        reboot - отправить машину в перезагрузку
+         
+        
+        sudo mount /dev/sdb1 /mnt/newdrive/ - смоттировать раздел (логический диск) /dev/sdb1 в папку /mnt/newdrive
+        cat /etc/fstab - вывести содержимое файла /etc/fstab
+        sudo cp /etc/fstab /etc/fstab.bak - сделать бэкап файла fstab
+        ls /etc/fs* - проверить появление бэкап-файла
+        lsblk -f - вывести подробную информацию о блочных устройствах (получить UUID нового раздела)
+        sudo nano /etc/fstab - открыть на редактирование файл fstab
+         
+        
+        whatis umount - вывести однострочную справку о команде umount
+        sudo umount /mnt/newdrive - размонтировать папку/раздел
+        sudo mount -a - смонтировать диски по инструкциям в файле fstab
+
+
+        LVM (logical volume  management)
+
+        sudo pvcreate /dev/sdc - создать физический том на диске
+        sudo pvcreate /dev/sdd /dev/sde - создать несколько физических томов сразу
+        sudo pvs - вывести физические тома
+        sudo gdisk /dev/sdf - утилита gdisk (работа с дисками)
+        lsblk - вывести список блочных устройств
+        sudo pvcreate /dev/sdf1 - создать физический том на разделе диска
+        sudo pvcreate /dev/sdf2 /dev/sdf3 /dev/sdf4 - создать несколько физических томов на разделах диска
+        sudo pvscan - то же, что sudo pvs
+        sudo pvdisplay - вывести подробную информацию о физических томах
+        sudo pvdisplay /dev/sdf4 - вывести подробную информацию о выбранном физическом томе
+
+
+		sudo vgs - вывести список VG (volume groups - группы томов)
+		sudo pvs - вывести список PV (physical volumes - физические тома)
+		sudo vgcreate vol_group1 /dev/sdc - создать группу томов на физическом диске
+		sudo vgcreate vol_group2 /dev/sdd /dev/sde - создать группу томов из нескольких дисков
+		sudo vgcreate vol_group3 /dev/sdf1 /dev/sf2 /dev/sf3 /dev/sf4 - создать группу томов из нескольких разделов дисков
+		sudo vgdisplay - вывести детальную информацию о всех группах томов в LVM
+		sudo lvs - вывести список LV (logical volumes - логические тома)
+		sudo lvcreate -L 500M -n logic_volume1 vol_group1 - создать логический том на 500МБ
+		sudo lvcreate -l 100 -n logic_volume2 vol_group1 - создать логический том на 100 экстентов (по 4МБ каждый)
+		sudo pvdisplay - вывести детальную информацию о всех физических томах в LVM
+		lsblk - вывести список блочных устройств
+		ls /dev/mapper -l - вывести информацию об устройствах в LVM
+		ls /dev/vol* -l - вывести информацию об устройствах в LVM
+		ls /dev/dm  - вывести информацию об устройствах в LVM
+		df -h - утилита Disk Free (отображает свободное место на дисках)
+		sudo mkfs.ext4 /dev/mapper/vol_group1-logic_volume1 - отформатировать том в файловую систему ext4
+		sudo mkfs.ext4 /dev/mapper/vol_group1-logic_volume2 - отформатировать том в файловую систему ext4
+		sudo mkdir /mnt/lv1 - создать каталоги для монтирования логических томов
+		sudo mkdir /mnt/lv2 - создать каталоги для монтирования логических томов
+		sudo mount /dev/mapper/vol_group1-logic_volume1 /mnt/lv1 - смонтировать логический том в папку /mnt/lv1
+		sudo mount /dev/mapper/vol_group1-logic_volume2 /mnt/lv2 - смонтировать логический том в папку /mnt/lv2
+		tree /mnt - вывести содержимое каталога в виде дерева
+
+
+		sudo lvs - вывести список LV (logical volumes - логические тома)
+		sudo vgs - вывести список VG (volume groups - группы томов)
+		df -h - утилита Disk Free (свободное место на дисках)
+		sudo cp -r /var/log /mnt/lv3 - заполнение каталога /mnt/lv3 произвольными файлами (копирование)
+		du /mnt/lv3 -sh - вывод информации о размере папки 
+		whatis lvextend - вывод однострочной справки по команде lvextend
+		sudo lvextend -L+200M /dev/mapper/vol_group2-lv3 - добавление 200МБ на логический том
+		sudo resize2fs /dev/mapper/vol_group2-lv3 - приведение в соответствие файловой системы после предыдущей команды
+		sudo lvextend -r -L+1G /dev/mapper/vol_group2-lv3 - использование в утилите lvextend опции -r позволяет обойтись 		без дальнейшего resize2fs
